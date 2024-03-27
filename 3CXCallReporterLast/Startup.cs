@@ -25,6 +25,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
+using TCX.Configuration;
 
 namespace _3CXCallReporterLast
 {
@@ -73,6 +74,7 @@ namespace _3CXCallReporterLast
         }
 
         public IConfiguration Configuration { get; }
+        public static PhoneSystem phoneSystem { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -97,7 +99,7 @@ namespace _3CXCallReporterLast
                 ReadConfiguration(filePath);
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                 Connection3cxApi();
-                //Start3cxEvents();
+                Start3cxEvents();
 
 
             }
@@ -170,7 +172,7 @@ namespace _3CXCallReporterLast
                 if (s.StartsWith("["))
                 {
                     CurrentSectionName = s.Split(new[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries)[0];
-                    CurrentSection = ConnectionString.iniContent[CurrentSectionName] = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+                    CurrentSection = GetConnectionStringClass.iniContent[CurrentSectionName] = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
                 }
                 else if (CurrentSection != null && !string.IsNullOrWhiteSpace(s) && !s.StartsWith("#") && !s.StartsWith(";"))
                 {
@@ -182,7 +184,7 @@ namespace _3CXCallReporterLast
 
                 }
             }
-            instanceBinPath = Path.Combine(ConnectionString.iniContent["General"]["AppPath"], "Bin");
+            instanceBinPath = Path.Combine(GetConnectionStringClass.iniContent["General"]["AppPath"], "Bin");
         }
 
         public static void setPhoneSystem(PhoneSystem phoneSystem)
@@ -195,15 +197,15 @@ namespace _3CXCallReporterLast
             try
             {
                 PhoneSystem.CfgServerHost = "127.0.0.1";
-                PhoneSystem.CfgServerPort = int.Parse(ConnectionString.iniContent["ConfigService"]["ConfPort"]);
-                PhoneSystem.CfgServerUser = ConnectionString.iniContent["ConfService"]["confUser"];
-                PhoneSystem.CfgServerPassword = ConnectionString.iniContent["ConfService"]["confPass"];
+                PhoneSystem.CfgServerPort = int.Parse(GetConnectionStringClass.iniContent["ConfService"]["ConfPort"]);
+                PhoneSystem.CfgServerUser = GetConnectionStringClass.iniContent["ConfService"]["confUser"];
+                PhoneSystem.CfgServerPassword = GetConnectionStringClass.iniContent["ConfService"]["confPass"];
                 var ps = PhoneSystem.Reset(
                         PhoneSystem.ApplicationName + new Random(Environment.TickCount).Next().ToString(),
                         "127.0.0.1",
-                        int.Parse(ConnectionString.iniContent["ConfService"]["ConfPort"]),
-                        ConnectionString.iniContent["ConfService"]["confUser"],
-                        ConnectionString.iniContent["ConfService"]["confPass"]
+                        int.Parse(GetConnectionStringClass.iniContent["ConfService"]["ConfPort"]),
+                        GetConnectionStringClass.iniContent["ConfService"]["confUser"],
+                        GetConnectionStringClass.iniContent["ConfService"]["confPass"]
                     );
                 ps.WaitForConnect(TimeSpan.FromSeconds(30));
                 setPhoneSystem(ps);
@@ -218,7 +220,7 @@ namespace _3CXCallReporterLast
         {
             PhoneSystem.Root.Inserted += new TCX.Configuration.NotificationEventHandler(Root_Inserted);
             PhoneSystem.Root.Updated += new TCX.Configuration.NotificationEventHandler(Root_Updated);
-            PhoneSystem.Root.Deleted += TCX.Configuration.NotificationEventHandler(Root_Deleted);
+            PhoneSystem.Root.Deleted += new TCX.Configuration.NotificationEventHandler(Root_Deleted);
         }
 
         private void Root_Deleted(object sender, NotificationEventArgs e)

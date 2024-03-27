@@ -1,6 +1,7 @@
 ﻿using _3CXCallReporterLast.Models.LoginModel;
 using _3CXCallReporterLast.Repository;
 using Microsoft.AspNetCore.Mvc;
+using TCX.Configuration;
 
 namespace _3CXCallReporter.Controllers
 {

@@ -8,8 +8,7 @@ namespace _3CXCallReporterLast.Repository
     {
         public static string GetDatabase(string query)
         {
-            ConnectionString cs = new ConnectionString();
-            NpgsqlConnection connectionFromMaster = new NpgsqlConnection(cs.connFromMaster);
+            NpgsqlConnection connectionFromMaster = new NpgsqlConnection(GetConnectionStringClass.connFromMaster);
 
             connectionFromMaster.Open();
 

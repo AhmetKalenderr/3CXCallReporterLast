@@ -3,6 +3,7 @@ using _3CXCallReporterLast.Models;
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using TCX.Configuration;
 
 namespace _3CXCallReporterLast.Services
 {
@@ -10,7 +11,7 @@ namespace _3CXCallReporterLast.Services
     {
         public List<AgentConnection> GetActiveConnectionAgent()
         {
-            NpgsqlConnection connectionFromSingle = new NpgsqlConnection(ConnectionString.connFromSingle);
+            NpgsqlConnection connectionFromSingle = new NpgsqlConnection(GetConnectionStringClass.connFromSingle);
 
             connectionFromSingle.Open();
 
