@@ -1,4 +1,4 @@
-using _3CXCallReporterLast.Helpers;
+ï»¿using _3CXCallReporterLast.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,10 +26,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using TCX.Configuration;
+using _3CXCallReporterLast.Repository;
 
 namespace _3CXCallReporterLast
 {
-    public  class Startup
+    public class Startup
     {
         //static ConcurrentDictionary<string, QueueCustom> queueDC = new ConcurrentDictionary<string, QueueCustom>();
 
@@ -57,7 +58,7 @@ namespace _3CXCallReporterLast
         //        a.AgentName = agent.FirstName + " " + agent.LastName;
         //        a.AgentNumber = agent.Number;
         //        a.AgentStatus = agent.IsRegistered ? agent.CurrentProfile.Name : "Offline";
-        //        a.ConnectionName = string.Empty;//DBden çekilecek olan kullanýcý ismi
+        //        a.ConnectionName = string.Empty;//DBden Ã§ekilecek olan kullanÃ½cÃ½ ismi
         //        a.LastChangeStatus = "";
         //        a.ConnectionNumber = "";
         //        agentDC.TryAdd(agent.Number, a);
@@ -79,7 +80,8 @@ namespace _3CXCallReporterLast
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            CustomDatabaseRepository customerRepo = new CustomDatabaseRepository();
+            customerRepo.CreateUserTableIfNotExists();
             try
             {
                 var filePath = string.Empty;
@@ -273,33 +275,33 @@ namespace _3CXCallReporterLast
                         {
                             ActiveConnection acc = e.ConfObject as ActiveConnection;
 
-                                //if (acc.DN is Queue)
-                                //{
+                            //if (acc.DN is Queue)
+                            //{
 
-                                //    try
-                                //    {
-                                //        Queue queue = acc.DN as Queue;
-                                //        QueueCustom queueWaiting = new QueueCustom();
-                                //        queueDC[queue.Number].Calls.TryAdd(acc.CallID.ToString(), new StartEnd());
+                            //    try
+                            //    {
+                            //        Queue queue = acc.DN as Queue;
+                            //        QueueCustom queueWaiting = new QueueCustom();
+                            //        queueDC[queue.Number].Calls.TryAdd(acc.CallID.ToString(), new StartEnd());
 
-                                //        if (!queueDC.Keys.Contains(queue.Number))
-                                //        {
-                                //            queueWaiting.QueueName = queue.Name;
-                                //            queueWaiting.QueueNumber = queue.Number;
-                                //            queueWaiting.Calls = new ConcurrentDictionary<string, StartEnd>();
-                                //            queueDC.TryAdd(queue.Number, queueWaiting);
-                                //        }
+                            //        if (!queueDC.Keys.Contains(queue.Number))
+                            //        {
+                            //            queueWaiting.QueueName = queue.Name;
+                            //            queueWaiting.QueueNumber = queue.Number;
+                            //            queueWaiting.Calls = new ConcurrentDictionary<string, StartEnd>();
+                            //            queueDC.TryAdd(queue.Number, queueWaiting);
+                            //        }
 
-                                //        setQueueListToClient(queueDC.ToString());
-                                //    }
-                                //    catch (Exception ex)
-                                //    {
-                                //        Console.WriteLine(ex.Message);
-                                //    }
-                                //}
-                                #endregion
+                            //        setQueueListToClient(queueDC.ToString());
+                            //    }
+                            //    catch (Exception ex)
+                            //    {
+                            //        Console.WriteLine(ex.Message);
+                            //    }
+                            //}
+                            #endregion
 
-                                #region AgentEvent
+                            #region AgentEvent
 
                             if (acc.DN is Extension)
                             {
@@ -308,7 +310,7 @@ namespace _3CXCallReporterLast
                                     Extension extension = (Extension)acc.DN;
                                     AgentConnection agentconnection = new AgentConnection();
                                     agentconnection.AgentName = extension.FirstName + " " + extension.LastName;
-                                    agentconnection.AgentNumber =  extension.Number;
+                                    agentconnection.AgentNumber = extension.Number;
                                     agentconnection.ConnectionNumber = acc.ExternalParty;
                                     agentconnection.ConnectionTime = DateTime.Now.ToString();
                                     setAgentCallDetail(agentconnection);
@@ -340,32 +342,32 @@ namespace _3CXCallReporterLast
                         }
                         break;
 
-                    //#endregion
-                    #region DN
-                    //case "DN":
+                        //#endregion
+                        #region DN
+                        //case "DN":
 
-                    //    try
-                    //    {
-                    //        DN dn = e.ConfObject as DN;
-                    //        if (dn is Extension)
-                    //        {
-                    //            Extension ext = e.ConfObject as Extension;
-                    //            brokerEvent.Enqueue(new QueueEvent() { EntityType = EntityType.DN, EventType = ev, CreatedTime = DateTime.Now, Destination = Destination.Extension, Name = ext.FirstName + " " + ext.LastName, Number = ext.Number, ConnectionNumber = "", CallId = "" });
+                        //    try
+                        //    {
+                        //        DN dn = e.ConfObject as DN;
+                        //        if (dn is Extension)
+                        //        {
+                        //            Extension ext = e.ConfObject as Extension;
+                        //            brokerEvent.Enqueue(new QueueEvent() { EntityType = EntityType.DN, EventType = ev, CreatedTime = DateTime.Now, Destination = Destination.Extension, Name = ext.FirstName + " " + ext.LastName, Number = ext.Number, ConnectionNumber = "", CallId = "" });
 
-                    //        }
-                    //        else if (dn is Queue)
-                    //        {
-                    //            Queue que = e.ConfObject as Queue;
-                    //            ///
-                    //        }
-                    //    }
-                    //    catch (Exception ex)
-                    //    {
-                    //        Console.WriteLine(ex.Message);
-                    //    }
+                        //        }
+                        //        else if (dn is Queue)
+                        //        {
+                        //            Queue que = e.ConfObject as Queue;
+                        //            ///
+                        //        }
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        Console.WriteLine(ex.Message);
+                        //    }
 
-                    //    break;
-                      #endregion
+                        //    break;
+                        #endregion
                 }
             }
         }
@@ -373,18 +375,18 @@ namespace _3CXCallReporterLast
         public static bool setAgentCallDetail(AgentConnection agentConnection)
         {
             bool connectionState = false;
-            var url = "https://localhost:5000/agentCallDetail";
+            var url = "https://localhost:3005/agentCallDetail";
             AgentRequestModel model = new AgentRequestModel();
             try
             {
                 model.agentDid = agentConnection.AgentNumber;
                 model.callerNumber = agentConnection.ConnectionNumber;
                 model.callerName = agentConnection.ConnectionName;
-                model.tc = agentConnection.TC;
-                model.note = agentConnection.Note;
+                model.tc = "agentConnection.TC";
+                model.note = "agentConnection.Note";
                 using (HttpClient client = new HttpClient())
                 {
-                    client.PostAsync(url,new StringContent(model.ToString(),Encoding.UTF8,"application/json"));
+                    client.PostAsync(url, new StringContent(model.ToString(), Encoding.UTF8, "application/json"));
                 }
             }
             catch (Exception)

@@ -1,4 +1,5 @@
 ﻿using _3CXCallReporterLast.Models;
+using _3CXCallReporterLast.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
@@ -7,11 +8,12 @@ namespace _3CXCallReporterLast.Controllers
     [ApiController]
     public class CustomerController
     {
-        [HttpPost("/insertCustomer")]
-        public string InsertData(List<CustomerForCSVModel> customers)
-        {
+        CustomDatabaseRepository customData = new CustomDatabaseRepository();
 
-            return string.Empty;
+        [HttpPost("/insertCustomer")]
+        public string InsertData([FromBody]List<CustomerForCSVModel> customers)
+        {
+            return customData.InsertData(customers);
         }
     }
 }

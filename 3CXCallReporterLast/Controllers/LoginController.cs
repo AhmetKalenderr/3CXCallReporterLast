@@ -35,15 +35,7 @@ namespace _3CXCallReporter.Controllers
             }
             else
             {
-                if (login.Password == PhoneSystem.Root.GetDNByNumber(login.Name).GetPropertyValue("SERVICES_ACCESS_PASSWORD"))
-                {
-                    return new LoginResponseModel
-                    {
-                        LoginStatus = true,
-                        Role = "agent"
-                    };
-                }
-                else
+                if (PhoneSystem.Root.GetDNByNumber(login.Name) ==null)
                 {
                     Response.StatusCode = 401;
                     return new LoginResponseModel
@@ -51,6 +43,26 @@ namespace _3CXCallReporter.Controllers
                         LoginStatus = false,
                         Role = string.Empty
                     };
+                }
+                else
+                {
+                    if (login.Password == PhoneSystem.Root.GetDNByNumber(login.Name).GetPropertyValue("SERVICES_ACCESS_PASSWORD"))
+                    {
+                        return new LoginResponseModel
+                        {
+                            LoginStatus = true,
+                            Role = "agent"
+                        };
+                    }
+                    else
+                    {
+                        Response.StatusCode = 401;
+                        return new LoginResponseModel
+                        {
+                            LoginStatus = false,
+                            Role = string.Empty
+                        };
+                    }
                 }
             }
 
