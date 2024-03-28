@@ -58,7 +58,7 @@ namespace _3CXCallReporterLast.Services
 
                                             detailConn.AgentNumber = (string)dr["dn_number"];
                                             detailConn.AgentName = (string)dr["display_name"];
-                                            detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(3)).ToString();
+                                            detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(1)).ToString();
                                             detailConn.ConnectionName = customRepo.GetDataByPhoneNumber(c[0].ExternalParty.ToString())?.Name;//Databaseden kullanıcı ismi çekilecek.
                                             detailConn.ConnectionNumber = c[0].ExternalParty.ToString();
                                             detailConnList.Add(detailConn);
@@ -72,7 +72,7 @@ namespace _3CXCallReporterLast.Services
 
                                         detailConn.AgentNumber = (string)dr["dn_number"];
                                         detailConn.AgentName = (string)dr["display_name"];
-                                        detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(3)).ToString();
+                                        detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(1)).ToString();
                                         detailConn.ConnectionName = customRepo.GetDataByPhoneNumber(c[0].ExternalParty.ToString())?.Name;//Databaseden kullanıcı ismi çekilecek.
                                         detailConn.ConnectionNumber = c[0].ExternalParty.ToString();
                                         detailConnList.Add(detailConn);

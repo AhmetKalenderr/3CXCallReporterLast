@@ -16,12 +16,12 @@ namespace _3CXCallReporterLast.Controllers
             return customData.InsertData(customers);
         }
 
-        //Odeme yapıldı mı bilgisi ??
-        public string InsertValidationItem()
-        {
-            return "";
+        ////Odeme yapıldı mı bilgisi ??
+        //public string InsertValidationItem()
+        //{
+        //    return "";
 
 
-        }
+        //}
     }
 }

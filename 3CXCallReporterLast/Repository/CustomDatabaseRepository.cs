@@ -4,6 +4,7 @@ using System.Data;
 using _3CXCallReporterLast.Helpers;
 using _3CXCallReporterLast.Models;
 using Npgsql;
+using TCX.Configuration;
 
 namespace _3CXCallReporterLast.Repository
 {
@@ -18,14 +19,16 @@ namespace _3CXCallReporterLast.Repository
             {
                 string sql = $@"
                                 INSERT INTO public.customers(
-	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"")
+	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"")
 	                            VALUES 
                 ";
 
                 foreach (var m in model)
                 {
-                    sql += $@"({m.Name},{m.TC},{m.PhoneNumber})";
+                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}'),";
                 }
+                sql = sql.Remove(sql.Length - 1);
+                Console.WriteLine(sql);
                 NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
 
                 command.ExecuteNonQuery();
@@ -50,6 +53,7 @@ namespace _3CXCallReporterLast.Repository
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
             connectionFromPostgres.Open();
             CustomerForCSVModel model = new CustomerForCSVModel();
+            phoneNumber = phoneNumber.Substring(phoneNumber.Length-9);
             try
             {
                 string sql = $@"SELECT id, ""customerName"", ""customerTc"", ""customerPhoneNumber"", ""customerNote"", ""customerPayment""
@@ -69,11 +73,12 @@ namespace _3CXCallReporterLast.Repository
                     model.Payment = reader.GetString(5);
                 }
 
-
+                connectionFromPostgres.Close();
 
             }
             catch (Exception ex)
             {
+                connectionFromPostgres.Close();
                 return model;
             }
 

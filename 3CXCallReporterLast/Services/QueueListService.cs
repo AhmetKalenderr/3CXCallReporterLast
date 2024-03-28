@@ -39,7 +39,7 @@ namespace _3CXCallReporterLast.Services
                         queue.QueueName = (string)dr["display_name"];
                         queue.WaitingNumber = queueCount[i].ExternalParty;
                         queue.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueCount[i].ExternalParty)?.Name;
-                        queue.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(3)).ToString();
+                        queue.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(1)).ToString();
                         queueEntites.Add(queue);
                     }
                 }

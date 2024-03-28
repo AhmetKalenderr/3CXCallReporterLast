@@ -109,7 +109,7 @@ namespace _3CXCallReporterLast
             {
                 Console.WriteLine(ex.Message);
             }
-
+            services.AddCors();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -132,6 +132,10 @@ namespace _3CXCallReporterLast
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseCors(x=> 
+                x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+            );
 
             app.UseEndpoints(endpoints =>
             {
@@ -372,32 +376,34 @@ namespace _3CXCallReporterLast
             }
         }
 
-        public static bool setAgentCallDetail(AgentConnection agentConnection)
+        public static async void setAgentCallDetail(AgentConnection agentConnection)
         {
             CustomDatabaseRepository customRepo = new CustomDatabaseRepository();
             
             bool connectionState = false;
-            var url = "https://localhost:3005/agentCallDetail";
+            var url = "http://localhost:3005/agentCallDetail";
             AgentRequestModel model = new AgentRequestModel();
             try
             {
                 model.agentDid = agentConnection.AgentNumber;
                 model.callerNumber = agentConnection.ConnectionNumber;
-                model.callerName = agentConnection.ConnectionName;
+                model.callerName = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Name;
                 model.tc = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).TC;
                 model.note = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Note;
                 model.payment = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Payment;
-                using (HttpClient client = new HttpClient())
-                {
-                    client.PostAsync(url, new StringContent(model.ToString(), Encoding.UTF8, "application/json"));
-                }
+                var payload = JsonConvert.SerializeObject(model);
+                var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+                var client = new HttpClient();
+                var response = await client.PostAsync(url, content);
+                
+                connectionState = true;
+               
             }
             catch (Exception)
             {
                 connectionState = false;
             }
-
-            return connectionState;
         }
     }
 }

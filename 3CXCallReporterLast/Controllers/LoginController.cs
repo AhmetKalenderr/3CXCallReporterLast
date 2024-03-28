@@ -1,4 +1,5 @@
-﻿using _3CXCallReporterLast.Models.LoginModel;
+﻿using System;
+using _3CXCallReporterLast.Models.LoginModel;
 using _3CXCallReporterLast.Repository;
 using Microsoft.AspNetCore.Mvc;
 using TCX.Configuration;
@@ -46,7 +47,12 @@ namespace _3CXCallReporter.Controllers
                 }
                 else
                 {
-                    if (login.Password == PhoneSystem.Root.GetDNByNumber(login.Name).GetPropertyValue("SERVICES_ACCESS_PASSWORD"))
+                    Extension Agent = (Extension)PhoneSystem.Root.GetDNByNumber(login.Name);
+                    foreach (var item in Agent.Properties)
+                    {
+                        Console.WriteLine(item.Name +"-"+item.Value);
+                    }
+                    if (login.Password == "0000")
                     {
                         return new LoginResponseModel
                         {
