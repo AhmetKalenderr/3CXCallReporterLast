@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using _3CXCallReporterLast.Helpers;
 using _3CXCallReporterLast.Models;
 using Npgsql;
@@ -44,25 +45,39 @@ namespace _3CXCallReporterLast.Repository
 
         }
         //Düzenlenecek..
-        public AgentConnection GetDataByPhoneNumber(string phoneNumber)
+        public CustomerForCSVModel GetDataByPhoneNumber(string phoneNumber)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
             connectionFromPostgres.Open();
-            AgentConnection agent = new AgentConnection();
+            CustomerForCSVModel model = new CustomerForCSVModel();
             try
             {
                 string sql = $@"SELECT id, ""customerName"", ""customerTc"", ""customerPhoneNumber"", ""customerNote"", ""customerPayment""
-	            FROM public.customers where ""customerPhoneNumber"" ilike '%{phoneNumber}%'";
+	            FROM public.customers where ""customerPhoneNumber"" ilike '%{phoneNumber}%' limit 1";
+
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+                
+                while (reader.Read())
+                {
+                    model.Name = reader.GetString(1);
+                    model.TC = reader.GetString(2);
+                    model.PhoneNumber = reader.GetString(3);
+                    model.Note = reader.GetString(4);
+                    model.Payment = reader.GetString(5);
+                }
 
 
 
             }
             catch (Exception ex)
             {
-                return agent;
+                return model;
             }
 
-            return agent;
+            return model;
         }
 
         public void CreateUserTableIfNotExists()

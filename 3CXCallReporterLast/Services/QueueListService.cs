@@ -1,5 +1,6 @@
 ﻿using _3CXCallReporterLast.Helpers;
 using _3CXCallReporterLast.Models;
+using _3CXCallReporterLast.Repository;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace _3CXCallReporterLast.Services
     {
         public List<QueueCustom> GetQueueWaitingList()
         {
+            CustomDatabaseRepository customRepo = new CustomDatabaseRepository();
+
             NpgsqlConnection connectionFromSingle = new NpgsqlConnection(GetConnectionStringClass.connFromSingle);
 
             connectionFromSingle.Open();
@@ -35,6 +38,7 @@ namespace _3CXCallReporterLast.Services
                         queue.QueueNumber = (string)dr["dn"];
                         queue.QueueName = (string)dr["display_name"];
                         queue.WaitingNumber = queueCount[i].ExternalParty;
+                        queue.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueCount[i].ExternalParty)?.Name;
                         queue.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(3)).ToString();
                         queueEntites.Add(queue);
                     }
@@ -45,6 +49,7 @@ namespace _3CXCallReporterLast.Services
                     queue.QueueNumber = (string)dr["dn"];
                     queue.QueueName = (string)dr["display_name"];
                     queue.WaitingNumber = "-";
+                    queue.WaitingCustomerName = "-";
                     queue.WaitingTime = "-";
                     queueEntites.Add(queue);
 

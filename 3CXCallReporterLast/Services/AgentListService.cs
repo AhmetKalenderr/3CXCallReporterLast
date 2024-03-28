@@ -1,5 +1,6 @@
 ﻿using _3CXCallReporterLast.Helpers;
 using _3CXCallReporterLast.Models;
+using _3CXCallReporterLast.Repository;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,8 @@ namespace _3CXCallReporterLast.Services
             var call = PhoneSystem.Root.GetActiveConnectionsByCallID();
             try
             {
+                CustomDatabaseRepository customRepo = new CustomDatabaseRepository();
+
                 if (call != null)
                 {
                     if (call.Count > 0)
@@ -56,7 +59,7 @@ namespace _3CXCallReporterLast.Services
                                             detailConn.AgentNumber = (string)dr["dn_number"];
                                             detailConn.AgentName = (string)dr["display_name"];
                                             detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(3)).ToString();
-                                            detailConn.ConnectionName = string.Empty;//Databaseden kullanıcı ismi çekilecek.
+                                            detailConn.ConnectionName = customRepo.GetDataByPhoneNumber(c[0].ExternalParty.ToString())?.Name;//Databaseden kullanıcı ismi çekilecek.
                                             detailConn.ConnectionNumber = c[0].ExternalParty.ToString();
                                             detailConnList.Add(detailConn);
 
@@ -70,7 +73,7 @@ namespace _3CXCallReporterLast.Services
                                         detailConn.AgentNumber = (string)dr["dn_number"];
                                         detailConn.AgentName = (string)dr["display_name"];
                                         detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(3)).ToString();
-                                        detailConn.ConnectionName = string.Empty;//Databaseden kullanıcı ismi çekilecek.
+                                        detailConn.ConnectionName = customRepo.GetDataByPhoneNumber(c[0].ExternalParty.ToString())?.Name;//Databaseden kullanıcı ismi çekilecek.
                                         detailConn.ConnectionNumber = c[0].ExternalParty.ToString();
                                         detailConnList.Add(detailConn);
 

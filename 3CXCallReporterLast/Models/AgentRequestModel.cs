@@ -10,5 +10,6 @@
         public string tc { get; set; }
 
         public string note { get; set; }
+        public string payment { get; set; }
     }
 }

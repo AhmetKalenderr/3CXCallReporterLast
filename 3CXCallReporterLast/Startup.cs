@@ -374,6 +374,8 @@ namespace _3CXCallReporterLast
 
         public static bool setAgentCallDetail(AgentConnection agentConnection)
         {
+            CustomDatabaseRepository customRepo = new CustomDatabaseRepository();
+            
             bool connectionState = false;
             var url = "https://localhost:3005/agentCallDetail";
             AgentRequestModel model = new AgentRequestModel();
@@ -382,8 +384,9 @@ namespace _3CXCallReporterLast
                 model.agentDid = agentConnection.AgentNumber;
                 model.callerNumber = agentConnection.ConnectionNumber;
                 model.callerName = agentConnection.ConnectionName;
-                model.tc = "agentConnection.TC";
-                model.note = "agentConnection.Note";
+                model.tc = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).TC;
+                model.note = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Note;
+                model.payment = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Payment;
                 using (HttpClient client = new HttpClient())
                 {
                     client.PostAsync(url, new StringContent(model.ToString(), Encoding.UTF8, "application/json"));

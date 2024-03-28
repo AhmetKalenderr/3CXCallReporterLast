@@ -10,5 +10,7 @@ namespace _3CXCallReporterLast.Models
         public string QueueNumber { get; set; }
         public string WaitingNumber { get; set; }
         public string WaitingTime { get; set; }
+
+        public string WaitingCustomerName { get; set; }
     }
 }

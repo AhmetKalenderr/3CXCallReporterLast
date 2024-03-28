@@ -5,5 +5,9 @@
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string TC { get; set; }
+
+        public string Note { get; set; }
+
+        public string Payment { get; set; }
     }
 }
