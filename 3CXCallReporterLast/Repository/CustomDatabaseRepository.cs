@@ -66,6 +66,7 @@ namespace _3CXCallReporterLast.Repository
                 
                 while (reader.Read())
                 {
+                    model.Id = reader.GetInt32(0);
                     model.Name = reader.GetString(1);
                     model.TC = reader.GetString(2);
                     model.PhoneNumber = reader.GetString(3);
@@ -83,6 +84,105 @@ namespace _3CXCallReporterLast.Repository
             }
 
             return model;
+        }
+
+        public AgentModel GetAgentByAgentNumber(string agentNumber)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            connectionFromPostgres.Open();
+
+            AgentModel agent = new AgentModel();
+            try
+            {
+                string sql = $@"SELECT id, ""agentNumber"", ""agentPassword""
+	        FROM public.agents where ""agentNumber"" = '{agentNumber}';";
+
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    agent.Id = reader.GetInt32(0);
+                    agent.AgentNumber = reader.GetString(1);
+                    agent.AgentPassword = reader.GetString(2);
+                    
+                }
+
+                connectionFromPostgres.Close();
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                return agent;
+            }
+
+            return agent;
+        }
+
+        public bool RegisterAgent(AgentModel registerModel)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            connectionFromPostgres.Open();
+
+            bool state = false;
+            try
+            {
+                string sql = $@"INSERT INTO public.agents(
+	            ""agentNumber"", ""agentPassword"")
+	            VALUES ('{registerModel.AgentNumber}', '{registerModel.AgentPassword}')"
+                ;
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                state = true;
+
+
+            }
+            catch (Exception ex)
+            {
+               connectionFromPostgres.Close();
+               state = false;
+            }
+
+            return state;
+        }
+
+        public bool UpdateNote(UpdateNoteCustomer phoneNumber)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            connectionFromPostgres.Open();
+
+            bool state = false;
+            try
+            {
+                string sql = $@"update  public.customers
+                set ""customerNote"" = '{phoneNumber.Note}'
+                where id =  {phoneNumber.Id}";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                state = true;
+                
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                state = false;
+            }
+
+            return state;
         }
 
         public void CreateUserTableIfNotExists()

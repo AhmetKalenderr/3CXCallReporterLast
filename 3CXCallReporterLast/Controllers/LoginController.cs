@@ -1,6 +1,6 @@
-﻿using System;
-using _3CXCallReporterLast.Models.LoginModel;
+﻿using _3CXCallReporterLast.Models.LoginModel;
 using _3CXCallReporterLast.Repository;
+using _3CXCallReporterLast.Services;
 using Microsoft.AspNetCore.Mvc;
 using TCX.Configuration;
 
@@ -36,6 +36,7 @@ namespace _3CXCallReporter.Controllers
             }
             else
             {
+                CustomDatabaseRepository customDatabaseRepository = new CustomDatabaseRepository();
                 if (PhoneSystem.Root.GetDNByNumber(login.Name) ==null)
                 {
                     Response.StatusCode = 401;
@@ -47,12 +48,7 @@ namespace _3CXCallReporter.Controllers
                 }
                 else
                 {
-                    Extension Agent = (Extension)PhoneSystem.Root.GetDNByNumber(login.Name);
-                    foreach (var item in Agent.Properties)
-                    {
-                        Console.WriteLine(item.Name +"-"+item.Value);
-                    }
-                    if (login.Password == "0000")
+                    if (customDatabaseRepository.GetAgentByAgentNumber(login.Name).AgentPassword ==login.Password)
                     {
                         return new LoginResponseModel
                         {

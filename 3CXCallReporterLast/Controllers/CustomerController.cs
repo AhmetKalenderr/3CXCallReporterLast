@@ -16,12 +16,12 @@ namespace _3CXCallReporterLast.Controllers
             return customData.InsertData(customers);
         }
 
-        ////Odeme yapıldı mı bilgisi ??
-        //public string InsertValidationItem()
-        //{
-        //    return "";
+        [HttpPost("/updateNote")]
+        public bool UpdateNote([FromBody] UpdateNoteCustomer customerNote)
+        {
+            return customData.UpdateNote(customerNote);
+        }
 
 
-        //}
     }
 }

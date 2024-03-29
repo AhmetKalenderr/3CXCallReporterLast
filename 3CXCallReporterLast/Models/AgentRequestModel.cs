@@ -2,6 +2,7 @@
 {
     public class AgentRequestModel
     {
+        public int Id { get; set; }
         public string agentDid { get; set; }
         public string callerNumber { get; set; }
 

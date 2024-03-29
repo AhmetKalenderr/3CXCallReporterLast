@@ -312,7 +312,7 @@ namespace _3CXCallReporterLast
                                 try
                                 {
                                     Extension extension = (Extension)acc.DN;
-                                    AgentConnection agentconnection = new AgentConnection();
+                                    AgentConnection agentconnection = new AgentConnection();                                  
                                     agentconnection.AgentName = extension.FirstName + " " + extension.LastName;
                                     agentconnection.AgentNumber = extension.Number;
                                     agentconnection.ConnectionNumber = acc.ExternalParty;
@@ -380,11 +380,11 @@ namespace _3CXCallReporterLast
         {
             CustomDatabaseRepository customRepo = new CustomDatabaseRepository();
             
-            bool connectionState = false;
             var url = "http://localhost:3005/agentCallDetail";
             AgentRequestModel model = new AgentRequestModel();
             try
             {
+                model.Id = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Id;
                 model.agentDid = agentConnection.AgentNumber;
                 model.callerNumber = agentConnection.ConnectionNumber;
                 model.callerName = customRepo.GetDataByPhoneNumber(agentConnection.ConnectionNumber).Name;
@@ -397,12 +397,11 @@ namespace _3CXCallReporterLast
                 var client = new HttpClient();
                 var response = await client.PostAsync(url, content);
                 
-                connectionState = true;
                
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                connectionState = false;
+                await Console.Out.WriteLineAsync(ex.Message);
             }
         }
     }
