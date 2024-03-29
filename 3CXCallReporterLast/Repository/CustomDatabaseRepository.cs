@@ -196,7 +196,7 @@ namespace _3CXCallReporterLast.Repository
                 connectionFromPostgres.Open();
                 string sql = $@"update  public.customers
                 set ""lastUpdateTime"" = '{DateTime.Now.AddHours(1)}',
-				""lastInsertedData"" = true
+				""lastInsertedData"" = false
 	            ;";
 
                 NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);

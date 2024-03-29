@@ -24,11 +24,11 @@ namespace _3CXCallReporterLast.Services
 
                 if (call != null)
                 {
-                    AgentConnection detailConn = new AgentConnection();
                     if (call.Count > 0)
                     {
                         foreach (var agent in agentList)
                         {
+                            AgentConnection detailConn = new AgentConnection();
                             var a = 0;
                             foreach (var c in call.Values)
                             {
@@ -38,6 +38,7 @@ namespace _3CXCallReporterLast.Services
                                 {
                                     var state = c[0].InternalParty.ToString();
                                     var dn = c[0].DN.ToString();
+
                                     if (!state.Contains("Wexternalline"))
                                     {
                                         if (state.Contains(agent.AgentNumber) && c[0].Status.ToString().Contains("Connected"))
@@ -103,6 +104,7 @@ namespace _3CXCallReporterLast.Services
 
 
                 }
+               
             }
             catch (Exception ex)
             {

@@ -34,6 +34,32 @@ namespace _3CXCallReporterLast.Repository
             return allAgents;
         }
 
+        public AgentModel GetAgentByAgentNumber(string dnNumber)
+        {
+            NpgsqlConnection connectionFromSingle = new NpgsqlConnection(GetConnectionStringClass.connFromSingle);
+            AgentModel agent = new AgentModel();
+
+            connectionFromSingle.Open();
+
+            var query = $@"SELECT dn as dn_number,display_name from users_view order by dn where dn = '{dnNumber}' limit 1;";
+
+            NpgsqlCommand cmd = new NpgsqlCommand(query, connectionFromSingle);
+
+            NpgsqlDataReader dr = cmd.ExecuteReader();
+
+            while (dr.Read())
+            {
+
+                agent.AgentNumber = dr["dn_number"].ToString();
+                agent.AgentName = dr["display_name"].ToString();
+                
+            }
+
+            connectionFromSingle.Close();
+
+            return agent;
+        }
+
 
         public List<QueueModel> GetAllQueue()
         {
