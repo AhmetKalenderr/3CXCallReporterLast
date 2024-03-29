@@ -14,48 +14,38 @@ namespace _3CXCallReporterLast.Services
         {
             CustomDatabaseRepository customRepo = new CustomDatabaseRepository();
 
-            NpgsqlConnection connectionFromSingle = new NpgsqlConnection(GetConnectionStringClass.connFromSingle);
-
-            connectionFromSingle.Open();
-
-            var query = "Select dn,display_name from queue_view";
-
             List<QueueCustom> queueEntites = new List<QueueCustom>();
-
-            NpgsqlCommand cmd = new NpgsqlCommand(query, connectionFromSingle);
-            NpgsqlDataReader dr = cmd.ExecuteReader();
-
-            while (dr.Read())
+            SingleDatabaseRepository singleDatabaseRepo = new SingleDatabaseRepository();
+            foreach (var queue in singleDatabaseRepo.GetAllQueue())
             {
-                var queueCount = PhoneSystem.Root.GetDNByNumber((string)dr["dn"]).GetActiveConnections();
+                var queueCount = PhoneSystem.Root.GetDNByNumber(queue.QueueNumber).GetActiveConnections();
 
-                if (PhoneSystem.Root.GetDNByNumber((string)dr["dn"]).GetActiveConnections().Length > 0)
+                if (PhoneSystem.Root.GetDNByNumber(queue.QueueNumber).GetActiveConnections().Length > 0)
                 {
 
-                    for (int i = 0; i < PhoneSystem.Root.GetDNByNumber((string)dr["dn"]).GetActiveConnections().Length; i++)
+                    for (int i = 0; i < PhoneSystem.Root.GetDNByNumber(queue.QueueNumber).GetActiveConnections().Length; i++)
                     {
-                        QueueCustom queue = new QueueCustom();
-                        queue.QueueNumber = (string)dr["dn"];
-                        queue.QueueName = (string)dr["display_name"];
-                        queue.WaitingNumber = queueCount[i].ExternalParty;
-                        queue.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueCount[i].ExternalParty)?.Name;
-                        queue.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(1)).ToString();
-                        queueEntites.Add(queue);
+                        QueueCustom queueCustom = new QueueCustom();
+                        queueCustom.QueueNumber = queue.QueueNumber;
+                        queueCustom.QueueName = queue.QueueNumber;
+                        queueCustom.WaitingNumber = queueCount[i].ExternalParty;
+                        queueCustom.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueCount[i].ExternalParty)?.Name;
+                        queueCustom.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(1)).ToString();
+                        queueEntites.Add(queueCustom);
                     }
                 }
                 else
                 {
-                    QueueCustom queue = new QueueCustom();
-                    queue.QueueNumber = (string)dr["dn"];
-                    queue.QueueName = (string)dr["display_name"];
-                    queue.WaitingNumber = "-";
-                    queue.WaitingCustomerName = "-";
-                    queue.WaitingTime = "-";
-                    queueEntites.Add(queue);
+                    QueueCustom queueCustom = new QueueCustom();
+                    queueCustom.QueueNumber = queue.QueueNumber;
+                    queueCustom.QueueName = queue.QueueNumber;
+                    queueCustom.WaitingNumber = "-";
+                    queueCustom.WaitingCustomerName = "-";
+                    queueCustom.WaitingTime = "-";
+                    queueEntites.Add(queueCustom);
 
                 }
             }
-            connectionFromSingle.Close();
 
 
             return queueEntites;

@@ -22,6 +22,12 @@ namespace _3CXCallReporterLast.Controllers
             return customData.UpdateNote(customerNote);
         }
 
+        [HttpPost("/deleteLastInsertedData")]
+        public bool DeleteLastInsertedData()
+        {
+            return customData.DeleteLastInsertedData();
+        }
+
 
     }
 }

@@ -12,10 +12,9 @@ namespace _3CXCallReporter.Controllers
         [HttpPost("/login")]
         public LoginResponseModel Login([FromBody] LoginRequestModel login)
         {
-
             if (login.Name == "admin")
             {
-                string password = MasterDatabaseRepository.GetDatabase("select configuration_webadmin_pass from customers ");
+                string password = MasterDatabaseRepository.GetDatabase("select configuration_webadmin_pass from customers");
                 if (login.Password == password)
                 {
                     return new LoginResponseModel

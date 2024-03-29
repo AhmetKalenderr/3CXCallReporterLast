@@ -13,19 +13,20 @@ namespace _3CXCallReporterLast.Repository
         public string InsertData(List<CustomerForCSVModel> model)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            UpdateOlderData();
             connectionFromPostgres.Open();
 
             try
             {
                 string sql = $@"
                                 INSERT INTO public.customers(
-	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"")
+	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"")
 	                            VALUES 
                 ";
 
                 foreach (var m in model)
                 {
-                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}'),";
+                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{DateTime.Now.AddHours(1)}'),";
                 }
                 sql = sql.Remove(sql.Length - 1);
                 Console.WriteLine(sql);
@@ -51,11 +52,11 @@ namespace _3CXCallReporterLast.Repository
         public CustomerForCSVModel GetDataByPhoneNumber(string phoneNumber)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
-            connectionFromPostgres.Open();
             CustomerForCSVModel model = new CustomerForCSVModel();
             phoneNumber = phoneNumber.Substring(phoneNumber.Length-9);
             try
             {
+                connectionFromPostgres.Open();
                 string sql = $@"SELECT id, ""customerName"", ""customerTc"", ""customerPhoneNumber"", ""customerNote"", ""customerPayment""
 	            FROM public.customers where ""customerPhoneNumber"" ilike '%{phoneNumber}%' limit 1";
 
@@ -89,11 +90,11 @@ namespace _3CXCallReporterLast.Repository
         public AgentModel GetAgentByAgentNumber(string agentNumber)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
-            connectionFromPostgres.Open();
 
             AgentModel agent = new AgentModel();
             try
             {
+                connectionFromPostgres.Open();
                 string sql = $@"SELECT id, ""agentNumber"", ""agentPassword""
 	        FROM public.agents where ""agentNumber"" = '{agentNumber}';";
 
@@ -125,11 +126,11 @@ namespace _3CXCallReporterLast.Repository
         public bool RegisterAgent(AgentModel registerModel)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
-            connectionFromPostgres.Open();
 
             bool state = false;
             try
             {
+                connectionFromPostgres.Open();
                 string sql = $@"INSERT INTO public.agents(
 	            ""agentNumber"", ""agentPassword"")
 	            VALUES ('{registerModel.AgentNumber}', '{registerModel.AgentPassword}')"
@@ -157,11 +158,11 @@ namespace _3CXCallReporterLast.Repository
         public bool UpdateNote(UpdateNoteCustomer phoneNumber)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
-            connectionFromPostgres.Open();
 
             bool state = false;
             try
             {
+                connectionFromPostgres.Open();
                 string sql = $@"update  public.customers
                 set ""customerNote"" = '{phoneNumber.Note}'
                 where id =  {phoneNumber.Id}";
@@ -185,13 +186,71 @@ namespace _3CXCallReporterLast.Repository
             return state;
         }
 
-        public void CreateUserTableIfNotExists()
+
+        public void UpdateOlderData()
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
-            connectionFromPostgres.Open();
 
             try
             {
+                connectionFromPostgres.Open();
+                string sql = $@"update  public.customers
+                set ""lastUpdateTime"" = '{DateTime.Now.AddHours(1)}',
+				""lastInsertedData"" = true
+	            ;";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+            }
+
+        }
+
+        public bool DeleteLastInsertedData()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            bool state = false;
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"DELETE FROM public.customers
+	                    WHERE ""lastInsertedData"" = true;";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                state = true;
+
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                state = false;
+            }
+
+            return state;
+        }
+        public void CreateUserTableIfNotExists()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            try
+            {
+                connectionFromPostgres.Open();
                 string sql = $@"CREATE TABLE IF NOT EXISTS public.customers
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),

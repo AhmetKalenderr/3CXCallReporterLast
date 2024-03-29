@@ -7,5 +7,7 @@
         public string AgentNumber { get; set; }
 
         public string AgentPassword { get; set; }
+
+        public string AgentName { get; set; }
     }
 }
