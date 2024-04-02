@@ -45,13 +45,13 @@ namespace _3CXCallReporterLast.Services
                                         {
 
                                             a = 1;
-                                            //Arayan No => c[0].ExternalParty.ToString()
 
                                             detailConn.AgentNumber = agent.AgentNumber;
                                             detailConn.AgentName = agent.AgentName;
-                                            detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(1)).ToString();
+                                            detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(2)).ToString();
                                             detailConn.ConnectionName = customRepo.GetDataByPhoneNumber(c[0].ExternalParty.ToString())?.Name;
-                                            detailConn.ConnectionNumber = c[0].ExternalParty.ToString();
+                                            //Burası incelenecek
+                                            detailConn.ConnectionNumber = c[0]?.ExternalParty.ToString();
                                             detailConnList.Add(detailConn);
 
                                             break;
@@ -63,7 +63,7 @@ namespace _3CXCallReporterLast.Services
 
                                         detailConn.AgentNumber = agent.AgentNumber;
                                         detailConn.AgentName = agent.AgentName;
-                                        detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(1)).ToString();
+                                        detailConn.ConnectionTime = (DateTime.Now - c[0].LastChangeStatus.AddHours(2)).ToString();
                                         detailConn.ConnectionName = customRepo.GetDataByPhoneNumber(c[0].ExternalParty.ToString())?.Name;
                                         detailConn.ConnectionNumber = c[0].ExternalParty.ToString();
                                         detailConnList.Add(detailConn);

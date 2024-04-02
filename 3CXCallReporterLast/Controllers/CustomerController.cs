@@ -28,6 +28,24 @@ namespace _3CXCallReporterLast.Controllers
             return customData.DeleteLastInsertedData();
         }
 
+        [HttpPost("/deleteAllData")]
+        public bool DeleteAllData()
+        {
+            return customData.DeleteAllData();
+        }
+
+        [HttpPost("/deleteTodayInsertedDataCustomerData")] 
+        public bool DeleteTodayInsertedDataCustomerData()
+        {
+            return customData.DeleteTodayInsertedDataCustomerData();
+        }
+
+        [HttpPost("/getCountCustomerData")]
+        public int GetCountCustomerData()
+        {
+            return customData.GetCountCustomerData();
+        }
+
 
     }
 }

@@ -28,9 +28,9 @@ namespace _3CXCallReporterLast.Services
                         QueueCustom queueCustom = new QueueCustom();
                         queueCustom.QueueNumber = queue.QueueNumber;
                         queueCustom.QueueName = queue.QueueNumber;
-                        queueCustom.WaitingNumber = queueCount[i].ExternalParty;
+                        queueCustom.WaitingNumber = queueCount[i]?.ExternalParty;
                         queueCustom.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueCount[i].ExternalParty)?.Name;
-                        queueCustom.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(1)).ToString();
+                        queueCustom.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(2)).ToString();
                         queueEntites.Add(queueCustom);
                     }
                 }

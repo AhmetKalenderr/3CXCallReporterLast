@@ -47,7 +47,9 @@ namespace _3CXCallReporter.Controllers
                 }
                 else
                 {
-                    if (customDatabaseRepository.GetAgentByAgentNumber(login.Name).AgentPassword ==login.Password)
+                    string agentRealPassword = customDatabaseRepository.GetAgentByAgentNumber(login.Name).AgentPassword;
+                    string gelenPassword = login.Password.ToString();
+                    if (login.Password == agentRealPassword)
                     {
                         return new LoginResponseModel
                         {

@@ -20,16 +20,15 @@ namespace _3CXCallReporterLast.Repository
             {
                 string sql = $@"
                                 INSERT INTO public.customers(
-	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"")
+	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"",""CreateDate"")
 	                            VALUES 
                 ";
 
                 foreach (var m in model)
                 {
-                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{DateTime.Now.AddHours(1)}'),";
+                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{DateTime.Now.AddHours(1)}','{DateTime.Now.AddHours(1)}'),";
                 }
                 sql = sql.Remove(sql.Length - 1);
-                Console.WriteLine(sql);
                 NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
 
                 command.ExecuteNonQuery();
@@ -48,7 +47,6 @@ namespace _3CXCallReporterLast.Repository
             }
 
         }
-        //Düzenlenecek..
         public CustomerForCSVModel GetDataByPhoneNumber(string phoneNumber)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
@@ -85,7 +83,42 @@ namespace _3CXCallReporterLast.Repository
             }
 
             return model;
+
+
         }
+
+        public int GetCountCustomerData()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            int count = 0;
+            try
+            {
+                //Tğm data sayısı eklenecek
+                connectionFromPostgres.Open();
+                string sql = $@"SELECT count(*) FROM public.customers;";
+
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    count = reader.GetInt32(0);
+
+                }
+
+                connectionFromPostgres.Close();
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+            }
+
+            return count;
+        }
+
 
         public AgentModel GetAgentByAgentNumber(string agentNumber)
         {
@@ -244,6 +277,69 @@ namespace _3CXCallReporterLast.Repository
 
             return state;
         }
+
+        public bool DeleteTodayInsertedDataCustomerData()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            bool state = false;
+            try
+            {
+                //Bugün insert edilen dataları sil
+                connectionFromPostgres.Open();
+                string sql = $@"delete FROM public.customers
+                where to_date(""CreateDate"",'DD-MM-YYYY') >= to_date('{DateTime.Now.AddHours(1)}','DD-MM-YYYY');";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                state = true;
+
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                state = false;
+            }
+
+            return state;
+        }
+
+
+        public bool DeleteAllData()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            bool state = false;
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"DELETE FROM public.customers";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                state = true;
+
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                state = false;
+            }
+
+            return state;
+        }
+
+
         public void CreateUserTableIfNotExists()
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
