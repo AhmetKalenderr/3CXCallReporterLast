@@ -18,15 +18,18 @@ namespace _3CXCallReporterLast.Repository
 
             try
             {
+                string guid = Guid.NewGuid().ToString();                
+
                 string sql = $@"
                                 INSERT INTO public.customers(
-	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"",""CreateDate"")
+	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"",""CreateDate"",""GroupGuid"")
 	                            VALUES 
                 ";
+                DateTime insertTime = DateTime.Now.AddHours(1);
 
                 foreach (var m in model)
                 {
-                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{DateTime.Now.AddHours(1)}','{DateTime.Now.AddHours(1)}'),";
+                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{insertTime}','{insertTime}','{guid}'),";
                 }
                 sql = sql.Remove(sql.Length - 1);
                 NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
