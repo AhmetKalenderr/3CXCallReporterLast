@@ -20,30 +20,36 @@ namespace _3CXCallReporterLast.Services
             {
                 var queueCount = PhoneSystem.Root.GetDNByNumber(queue.QueueNumber).GetActiveConnections();
 
-                if (PhoneSystem.Root.GetDNByNumber(queue.QueueNumber).GetActiveConnections().Length > 0)
+                try
                 {
-
-                    for (int i = 0; i < PhoneSystem.Root.GetDNByNumber(queue.QueueNumber).GetActiveConnections().Length; i++)
+                    if (queueCount.Length > 0)
+                    {
+                        foreach (var queueItem in queueCount)
+                        {
+                            QueueCustom queueCustom = new QueueCustom();
+                            queueCustom.QueueNumber = queue.QueueNumber;
+                            queueCustom.QueueName = queue.QueueNumber;
+                            queueCustom.WaitingNumber = queueItem.ExternalParty;
+                            queueCustom.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueItem.ExternalParty)?.Name;
+                            queueCustom.WaitingTime = (DateTime.Now - (queueItem.LastChangeStatus).AddHours(2)).ToString();
+                            queueEntites.Add(queueCustom);
+                        }
+                    }
+                    else
                     {
                         QueueCustom queueCustom = new QueueCustom();
                         queueCustom.QueueNumber = queue.QueueNumber;
                         queueCustom.QueueName = queue.QueueNumber;
-                        queueCustom.WaitingNumber = queueCount[i]?.ExternalParty;
-                        queueCustom.WaitingCustomerName = customRepo.GetDataByPhoneNumber(queueCount[i].ExternalParty)?.Name;
-                        queueCustom.WaitingTime = (DateTime.Now - (queueCount[i].LastChangeStatus).AddHours(2)).ToString();
+                        queueCustom.WaitingNumber = "-";
+                        queueCustom.WaitingCustomerName = "-";
+                        queueCustom.WaitingTime = "-";
                         queueEntites.Add(queueCustom);
+
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    QueueCustom queueCustom = new QueueCustom();
-                    queueCustom.QueueNumber = queue.QueueNumber;
-                    queueCustom.QueueName = queue.QueueNumber;
-                    queueCustom.WaitingNumber = "-";
-                    queueCustom.WaitingCustomerName = "-";
-                    queueCustom.WaitingTime = "-";
-                    queueEntites.Add(queueCustom);
-
+                    Console.WriteLine($@"QueueCountta sorun var : {queueCount}");
                 }
             }
 

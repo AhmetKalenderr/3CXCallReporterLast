@@ -11,7 +11,7 @@ namespace _3CXCallReporterLast.Controllers
         CustomDatabaseRepository customData = new CustomDatabaseRepository();
 
         [HttpPost("/insertCustomer")]
-        public string InsertData([FromBody]List<CustomerForCSVModel> customers)
+        public CsvInsertDataResponseModel InsertData([FromBody]List<CustomerForCSVModel> customers)
         {
             return customData.InsertData(customers);
         }
@@ -44,6 +44,30 @@ namespace _3CXCallReporterLast.Controllers
         public int GetCountCustomerData()
         {
             return customData.GetCountCustomerData();
+        }
+
+        [HttpPost("/deleteDataByGuid")]
+        public bool deleteDataByGuid([FromBody]RequestIdModel id)
+        {
+            return customData.DeleteDataByGuid(id.Id);
+        }
+
+        [HttpPost("/deleteDataById")]
+        public bool DeleteDataById([FromBody] RequestIdModel id)
+        {
+            return customData.DeleteDataById(id.Id);
+        }
+
+        [HttpPost("/getGroupCsv")]
+        public List<GroupCsvModel> GetGroupCsv()
+        {
+            return customData.GetGroupCsv();
+        }
+
+        [HttpPost("/getGroupCsvDetails")]
+        public List<CustomerForCSVModel> GetGroupCsvDetails([FromBody]RequestIdModel id)
+        {
+            return customData.GetGroupCsvDetails(id.Id);
         }
 
 

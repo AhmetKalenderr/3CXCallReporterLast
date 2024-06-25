@@ -307,8 +307,7 @@ namespace _3CXCallReporterLast
 
                             #region AgentEvent
 
-                            if (acc.DN is Extension)
-                            {
+                           
                                 try
                                 {
                                     Extension extension = (Extension)acc.DN;
@@ -327,7 +326,7 @@ namespace _3CXCallReporterLast
                                 }
 
                                 #endregion
-                            }
+                            
                             //else if (acc.DN is RoutePoint)
                             //{
                             //    try

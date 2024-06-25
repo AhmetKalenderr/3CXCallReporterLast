@@ -1,52 +1,71 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using _3CXCallReporterLast.Helpers;
+﻿using _3CXCallReporterLast.Helpers;
 using _3CXCallReporterLast.Models;
 using Npgsql;
-using TCX.Configuration;
+using System;
+using System.Collections.Generic;
 
 namespace _3CXCallReporterLast.Repository
 {
     public class CustomDatabaseRepository
     {
-        public string InsertData(List<CustomerForCSVModel> model)
+        public CsvInsertDataResponseModel InsertData(List<CustomerForCSVModel> model)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
             UpdateOlderData();
             connectionFromPostgres.Open();
+            CsvInsertDataResponseModel modelResponse = new CsvInsertDataResponseModel();
 
             try
             {
-                string guid = Guid.NewGuid().ToString();                
+                string guid = Guid.NewGuid().ToString();
 
-                string sql = $@"
+                string sqlForQuinn = $@"
                                 INSERT INTO public.customers(
 	                             ""customerName"", ""customerTc"", ""customerPhoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"",""CreateDate"",""GroupGuid"")
+	                            VALUES 
+                ";
+
+                string sqlForWe = $@"
+                                INSERT INTO public.""OurCustomerData""(
+	                             ""name"", ""identityNumber"", ""phoneNumber"",""customerNote"",""customerPayment"",""lastInsertedData"",""lastUpdateTime"",""CreateDate"",""GroupGuid"")
 	                            VALUES 
                 ";
                 DateTime insertTime = DateTime.Now.AddHours(1);
 
                 foreach (var m in model)
                 {
-                    sql += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{insertTime}','{insertTime}','{guid}'),";
+                    //string formatDataNumber = m.PhoneNumber.Substring(m.PhoneNumber.Length - 10);
+                    //if (!formatDataNumber.StartsWith('5'))
+                    //{
+                    //    modelResponse.success = false;
+                    //    modelResponse.message = "Data formatı hatalı.";
+                    //    return modelResponse;
+                    //}
+                    sqlForQuinn += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{insertTime}','{insertTime}','{guid}'),";
+                    sqlForWe += $@"('{m.Name}','{m.TC}','{m.PhoneNumber}','{m.Note}','{m.Payment}',true,'{insertTime}','{insertTime}','{guid}'),";
                 }
-                sql = sql.Remove(sql.Length - 1);
-                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+                sqlForQuinn = sqlForQuinn.Remove(sqlForQuinn.Length - 1);
+                sqlForWe = sqlForWe.Remove(sqlForWe.Length - 1);
+                NpgsqlCommand command = new NpgsqlCommand(sqlForQuinn, connectionFromPostgres);
+                NpgsqlCommand command2 = new NpgsqlCommand(sqlForWe, connectionFromPostgres);
 
                 command.ExecuteNonQuery();
+                command2.ExecuteNonQuery();
 
                 connectionFromPostgres.Close();
 
-                return "Başarılı";
+                modelResponse.success = true;
+                modelResponse.message = "Başarılı";
+                return modelResponse;
 
             }
             catch (System.Exception ex)
             {
                 connectionFromPostgres.Close();
                 Console.WriteLine(ex.Message);
-
-                return "Başarısız";
+                modelResponse.message = "Başarısız";
+                modelResponse.success= false;
+                return modelResponse;
             }
 
         }
@@ -54,7 +73,7 @@ namespace _3CXCallReporterLast.Repository
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
             CustomerForCSVModel model = new CustomerForCSVModel();
-            phoneNumber = phoneNumber.Substring(phoneNumber.Length-9);
+            phoneNumber = phoneNumber.Substring(phoneNumber.Length - 9);
             try
             {
                 connectionFromPostgres.Open();
@@ -65,7 +84,7 @@ namespace _3CXCallReporterLast.Repository
                 cmd.CommandText = sql;
 
                 NpgsqlDataReader reader = cmd.ExecuteReader();
-                
+
                 while (reader.Read())
                 {
                     model.Id = reader.GetInt32(0);
@@ -123,6 +142,7 @@ namespace _3CXCallReporterLast.Repository
         }
 
 
+
         public AgentModel GetAgentByAgentNumber(string agentNumber)
         {
             NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
@@ -144,7 +164,7 @@ namespace _3CXCallReporterLast.Repository
                     agent.Id = reader.GetInt32(0);
                     agent.AgentNumber = reader.GetString(1);
                     agent.AgentPassword = reader.GetString(2);
-                    
+
                 }
 
                 connectionFromPostgres.Close();
@@ -157,6 +177,52 @@ namespace _3CXCallReporterLast.Repository
             }
 
             return agent;
+        }
+
+        public List<GroupCsvModel> GetGroupCsv()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            List<GroupCsvModel> listGroupCsv = new List<GroupCsvModel>();
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"SELECT 
+	            count(*) as ""DataCount"",
+	            ""CreateDate"",
+	            ""GroupGuid""
+	            FROM public.customers 
+	            where length(""GroupGuid"")>1
+	            group by ""GroupGuid"",""CreateDate""
+	            order by ""CreateDate"" desc
+	            ;";
+
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    GroupCsvModel groupCsvModel = new GroupCsvModel
+                    {
+                        DataCount = reader.GetInt32(0),
+                        CreateDate = reader.GetString(1),
+                        GroupGuid = reader.GetString(2)
+                    };
+
+                    listGroupCsv.Add(groupCsvModel);
+
+                }
+
+                connectionFromPostgres.Close();
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+            }
+
+            return listGroupCsv;
         }
 
         public bool RegisterAgent(AgentModel registerModel)
@@ -184,8 +250,8 @@ namespace _3CXCallReporterLast.Repository
             }
             catch (Exception ex)
             {
-               connectionFromPostgres.Close();
-               state = false;
+                connectionFromPostgres.Close();
+                state = false;
             }
 
             return state;
@@ -210,7 +276,7 @@ namespace _3CXCallReporterLast.Repository
                 connectionFromPostgres.Close();
 
                 state = true;
-                
+
 
             }
             catch (Exception ex)
@@ -261,6 +327,36 @@ namespace _3CXCallReporterLast.Repository
                 connectionFromPostgres.Open();
                 string sql = $@"DELETE FROM public.customers
 	                    WHERE ""lastInsertedData"" = true;";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                state = true;
+
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                state = false;
+            }
+
+            return state;
+        }
+
+        public bool DeleteDataByGuid(string guid)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            bool state = false;
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"DELETE FROM public.customers
+	                    WHERE ""GroupGuid"" = '{guid}';";
 
                 NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
 
@@ -375,6 +471,196 @@ TABLESPACE pg_default;
                 connectionFromPostgres.Close();
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public List<CustomerForCSVModel> GetGroupCsvDetails(string guid)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            List<CustomerForCSVModel> listCustomerCsv = new List<CustomerForCSVModel>();
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"select ""id"",
+	        ""customerName"",
+	        ""customerPhoneNumber"",
+	        ""customerTc"",
+	        ""customerNote"" from public.customers
+            where ""GroupGuid"" = '{guid}';";
+
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    CustomerForCSVModel csvDetail = new CustomerForCSVModel
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1),
+                        PhoneNumber = reader.GetString(2),
+                        TC = reader.GetString(3),
+                        Note = reader.GetString(4),
+                    };
+
+                    listCustomerCsv.Add(csvDetail);
+
+                }
+
+                connectionFromPostgres.Close();
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+            }
+
+            return listCustomerCsv;
+
+        }
+
+        public bool DeleteDataById(string id)
+        {
+            bool successState = false;
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"DELETE FROM public.customers
+	                    WHERE ""id"" = '{id}';";
+
+                NpgsqlCommand command = new NpgsqlCommand(sql, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+
+                connectionFromPostgres.Close();
+
+                successState = true;
+
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+                successState = false;
+            }
+
+            return successState;
+            return successState;
+           
+        }
+
+        public DialerOpenOrCloseModel CheckPaymentAndOpenOrCloseDialer(bool state)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+
+            Boolean PaymentState = false;
+            DialerOpenOrCloseModel model = new DialerOpenOrCloseModel();
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"select ""isDialerPayment"" from public.""DialerTable"";";
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    PaymentState = reader.GetBoolean(0);
+                }
+                reader.Close();
+
+                if (PaymentState)
+                {
+                    string sqlOpenState = $@"update public.""DialerTable"" set ""isDialerOpen"" = {state} where id = 1;";
+
+                    cmd.CommandText = sqlOpenState;
+
+                    cmd.ExecuteNonQuery();
+                    model.Message = "İşlem Başarılı";
+                    model.Status = true;                    
+                }
+                else
+                {
+                    model.Message = "Ödeme Yapılmadığı için Dialer başlatılamadı.";
+                    model.Status = false;
+                }
+
+                connectionFromPostgres.Close();
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+            }
+
+            return model;
+        }
+
+        public string ChangeState(bool state)
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            string stateMesssage = "";
+            connectionFromPostgres.Open();
+
+            if (state)
+            {
+
+                string sqlOpenState = $@"update public.""DialerTable"" set ""isDialerPayment"" = {state} where id = 1;";
+
+                NpgsqlCommand command = new NpgsqlCommand(sqlOpenState, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+                stateMesssage = "Ödeme yapıldı alanı evet olarak set edildi";
+
+            } else
+            {
+                string sqlOpenState = $@"update public.""DialerTable"" set ""isDialerPayment"" = {state} , ""isDialerOpen"" = {state} where id = 1;";
+
+                NpgsqlCommand command = new NpgsqlCommand(sqlOpenState, connectionFromPostgres);
+
+                command.ExecuteNonQuery();
+                stateMesssage = "Şimdi koyduk amlarına";
+            }
+            connectionFromPostgres.Close();
+            return stateMesssage;
+
+
+            
+        }
+
+        public bool CheckDialerState()
+        {
+            NpgsqlConnection connectionFromPostgres = new NpgsqlConnection(GetConnectionStringClass.connFromPostgres);
+            bool dialerState = false;
+            try
+            {
+                connectionFromPostgres.Open();
+                string sql = $@"select ""isDialerOpen"" from public.""DialerTable"";";
+                NpgsqlCommand cmd = connectionFromPostgres.CreateCommand();
+                cmd.CommandText = sql;
+
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    dialerState = reader.GetBoolean(0);
+                }
+
+
+                connectionFromPostgres.Close();
+
+            }
+            catch (Exception ex)
+            {
+                connectionFromPostgres.Close();
+            }
+
+            return dialerState;
+
+
         }
     }
 }
